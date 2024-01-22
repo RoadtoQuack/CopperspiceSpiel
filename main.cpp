@@ -205,12 +205,18 @@ std::vector<Mobs> Mob{};
 QLabel *rightCharInfoLabel;
 QLabel *leftCharInfoLabel;
 QLabel *leftCharLabel;
+QLabel *coinsDisplayLabel;
 QProgressBar *playerHealthBar;
 QProgressBar *enemyHealthBar;
+QPushButton *ButtonPotion_s;
+QPushButton *ButtonPotion_m;
+QPushButton *ButtonPotion_l;
 
 int numbpotion_s = 3;
 int numbpotion_m = 2;
 int numbpotion_l = 4;
+
+int coins = 0;
 
 //LoadDataPart..........................................................
       void loadCharData(){
@@ -333,6 +339,8 @@ int numbpotion_l = 4;
         if(Mob[0].hp <= 0){
             Mob.pop_back();
             Held[0].getEXP(1000);
+            coins = coins + 100;
+            updateUI();
             switchToVictoryscreen();
         }else{
             Mob[0].Attack(Held[0]);
@@ -422,6 +430,40 @@ int numbpotion_l = 4;
         }
     }
 
+    void buyPotion(int potion){
+        int potioncost_s = 20;
+        int potioncost_m = 30;
+        int potioncost_l = 40;
+
+        if(potion == 1){
+            if(coins>=potioncost_s){
+                coins = coins - potioncost_s;
+                numbpotion_s = numbpotion_s + 1;
+                QMessageBox::information(this,"Information", QString::fromStdString("Du hast einen Trank(S) für  " + std::to_string(potioncost_s) + " coins gekauft."));
+            }else{
+                QMessageBox::information(this,"Information", "Du hast nicht genug coins");
+            }
+        }else if(potion == 2){
+            if(coins>=potioncost_m){
+                coins = coins - potioncost_m;
+                numbpotion_m = numbpotion_m + 1;
+                QMessageBox::information(this,"Information", QString::fromStdString("Du hast einen Trank(M) für  " + std::to_string(potioncost_m) + " coins gekauft."));
+            }else{
+                QMessageBox::information(this,"Information", "Du hast nicht genug coins");
+            }
+        }else if(potion == 3){
+            if(coins>=potioncost_l){
+                coins = coins - potioncost_l;
+                numbpotion_l = numbpotion_l + 1;
+                QMessageBox::information(this,"Information", QString::fromStdString("Du hast einen Trank(L) für  " + std::to_string(potioncost_l) + " coins gekauft."));
+            }else{
+                QMessageBox::information(this,"Information", "Du hast nicht genug coins");
+            }
+        }
+        updateUI();
+    }
+
+
 
     //SwitchScreenFunktions.............................................
 
@@ -450,6 +492,12 @@ int numbpotion_l = 4;
       void switchToHealScreen(){
             stackedWidget.setCurrentIndex(8);
       }
+      void switchToKaufmenü(){
+            stackedWidget.setCurrentIndex(9);
+      }
+      void switchToVerkaufmenü(){
+            stackedWidget.setCurrentIndex(10);
+      }
 
     CS_SIGNAL_1(Public, void characterCreated())
     CS_SIGNAL_2(characterCreated)
@@ -459,7 +507,7 @@ int numbpotion_l = 4;
             QVBoxLayout *mainLayout = new QVBoxLayout(this);
             mainLayout->addWidget(&stackedWidget);
       }
-
+//UpdateLabels.......................................................
       void updateUI(){
         updateLabels();
       }
@@ -487,7 +535,34 @@ int numbpotion_l = 4;
         enemyHealthBar->setRange(0, Mob[0].maxhp);
         enemyHealthBar->setValue(Mob[0].hp);
 }
+        coinsDisplayLabel->setText(QString::number(coins));
+        
+        //Consummenü Potion Buttons
+        if (numbpotion_s > 0) {
+        ButtonPotion_s->setText("Use Potion (S) (x" + QString::number(numbpotion_s) + ")");
+        ButtonPotion_s->setEnabled(true);
+    } else {
+        ButtonPotion_s->setText("Use Potion (S) (0)");
+        ButtonPotion_s->setEnabled(false);
+    }
+        if (numbpotion_m > 0) {
+        ButtonPotion_m->setText("Use Potion (M) (x" + QString::number(numbpotion_m) + ")");
+        ButtonPotion_m->setEnabled(true);
+    } else {
+        ButtonPotion_m->setText("Use Potion (M) (0)");
+        ButtonPotion_m->setEnabled(false);
+    }
+        if (numbpotion_l > 0) {
+        ButtonPotion_l->setText("Use Potion (L) (x" + QString::number(numbpotion_l) + ")");
+        ButtonPotion_l->setEnabled(true);
+    } else {
+        ButtonPotion_l->setText("Use Potion (L) (0)");
+        ButtonPotion_l->setEnabled(false);
+    }
       }
+//..............................................................................
+
+//Erstellen der Pages.......................................
       void createPages(){
             //StartScreen
             QWidget *StartMenü = new QWidget;
@@ -606,7 +681,7 @@ int numbpotion_l = 4;
 
 QHBoxLayout *infoLabelsLayout = new QHBoxLayout;
 infoLabelsLayout->addWidget(leftCharInfoLabel);
-infoLabelsLayout->addStretch(); // Add stretch to push the right label to the right
+infoLabelsLayout->addStretch();
 infoLabelsLayout->addWidget(rightCharInfoLabel);
 KampfmenülayoutV->addLayout(infoLabelsLayout);
 
@@ -670,9 +745,6 @@ KampfmenülayoutV->addLayout(ImageLayout);
             stackedWidget.addWidget(ShopMenü);                  
 
             //Deathscreen
-            //QString tempName = QString::fromStdString(Held[0].Name);
-            //Held.erase(Held.begin());
-            //Mob.pop_back();
             QWidget *Deathscreen = new QWidget;
             QVBoxLayout *Deathlayout = new QVBoxLayout(Deathscreen);
             QLabel *deathLabel = new QLabel("You have died!", this);
@@ -695,9 +767,9 @@ KampfmenülayoutV->addLayout(ImageLayout);
             //HealScreen
             QWidget *HealScreen = new QWidget;
             QVBoxLayout *Heallayout = new QVBoxLayout(HealScreen);
-            QPushButton *ButtonPotion_s = new QPushButton("Use Potion (S)");
-            QPushButton *ButtonPotion_m = new QPushButton("Use Potion (M)");
-            QPushButton *ButtonPotion_l = new QPushButton("Use Potion (L)");
+            ButtonPotion_s = new QPushButton("Use Potion (S)");
+            ButtonPotion_m = new QPushButton("Use Potion (M)");
+            ButtonPotion_l = new QPushButton("Use Potion (L)");
             QPushButton *ZurückButton5 = new QPushButton("Zurück");
             ButtonPotion_s->setObjectName("Potion_s");
             ButtonPotion_m->setObjectName("Potion_m");
@@ -709,11 +781,58 @@ KampfmenülayoutV->addLayout(ImageLayout);
             Heallayout->addWidget(ZurückButton5);
             stackedWidget.addWidget(HealScreen);
 
+            //Kaufmenü
+            QWidget *Kaufmenü = new QWidget;
+            QVBoxLayout *Kauflayout = new QVBoxLayout(Kaufmenü);
+            QHBoxLayout *coinsLayout = new QHBoxLayout(Kaufmenü);
+            QLabel *coinLabel = new QLabel(QString("Kaufmenü"),Kaufmenü);
+            QPixmap coinpix("../Bilder/coin.jpg");
+            QPixmap coinpix_scaled = coinpix.scaled(20, 20, Qt::KeepAspectRatio);
+            coinLabel->setPixmap(coinpix_scaled);
+            coinLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+            coinsDisplayLabel = new QLabel(QString::number(coins), this);
+            coinsDisplayLabel->setStyleSheet("font-size: 16px;");
+            coinsDisplayLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+            QPushButton *Kaufen_trank_s = new QPushButton("Buy a Potion(S)");
+            QPushButton *Kaufen_trank_m = new QPushButton("Buy a Potion(M)");
+            QPushButton *Kaufen_trank_l = new QPushButton("Buy a Potion(L)");
+            QPushButton *ZurückButton6 = new QPushButton("Zurück");
+            Kaufen_trank_s->setObjectName("Kaufen_trank_s");
+            Kaufen_trank_m->setObjectName("Kaufen_trank_m");
+            Kaufen_trank_l->setObjectName("Kaufen_trank_l");
+            ZurückButton6->setObjectName("Zurück");
+            coinsLayout->setAlignment(Qt::AlignLeft);
+            coinsLayout->addWidget(coinLabel);
+            coinsLayout->addWidget(coinsDisplayLabel);
+            Kauflayout->addLayout(coinsLayout);
+            Kauflayout->addWidget(Kaufen_trank_s);
+            Kauflayout->addWidget(Kaufen_trank_m);
+            Kauflayout->addWidget(Kaufen_trank_l);
+            Kauflayout->addStretch(); 
+            Kauflayout->addWidget(ZurückButton6);
+            stackedWidget.addWidget(Kaufmenü);
+
+
+            //Verkaufmenü
+            QWidget *Verkaufmenü = new QWidget;
+            QVBoxLayout *Verkauflayout = new QVBoxLayout(Verkaufmenü);
+            QLabel *coinLabel2 = new QLabel("💰", this); 
+            coinLabel2->setStyleSheet("font-size: 20px;");
+            QLabel *coinsDisplayLabel2 = new QLabel(QString::number(coins), this);
+            coinsDisplayLabel2->setStyleSheet("font-size: 16px;");
+            QPushButton *ZurückButton7 = new QPushButton("Zurück");
+            ZurückButton7->setObjectName("Zurück");
+            Verkauflayout->addWidget(coinLabel2);
+            Verkauflayout->addWidget(coinsDisplayLabel2);
+            Verkauflayout->addWidget(ZurückButton7);
+            stackedWidget.addWidget(Verkaufmenü);
+
+
             stackedWidget.setCurrentIndex(0);
 
 
-
-
+//............................................................................
+//Connections...................................................................
       }
       void setupConnections() {
 
@@ -729,20 +848,28 @@ KampfmenülayoutV->addLayout(ImageLayout);
         connect(stackedWidget.widget(3)->findChild<QPushButton*>("ZurückButton"),&QPushButton::clicked, this, &MainWindow::switchToMM);
         connect(stackedWidget.widget(3)->findChild<QPushButton*>("Potions"),&QPushButton::clicked, this, &MainWindow::switchToHealScreen);
         connect(stackedWidget.widget(4)->findChild<QPushButton*>("ZurückButton"),&QPushButton::clicked, this, &MainWindow::switchToMM);
+        connect(stackedWidget.widget(5)->findChild<QPushButton*>("Kaufen"),&QPushButton::clicked, this, &MainWindow::switchToKaufmenü);
+        connect(stackedWidget.widget(5)->findChild<QPushButton*>("Verkaufen"),&QPushButton::clicked, this, &MainWindow::switchToVerkaufmenü);
         connect(stackedWidget.widget(5)->findChild<QPushButton*>("ZurückButton"),&QPushButton::clicked, this, &MainWindow::switchToMM);
         connect(stackedWidget.widget(6)->findChild<QPushButton*>("DeathEnd"),&QPushButton::clicked, this, &QWidget::close);
         connect(stackedWidget.widget(7)->findChild<QPushButton*>("VictoryButton"),&QPushButton::clicked, this, &MainWindow::switchToMM);
         connect(stackedWidget.widget(8)->findChild<QPushButton*>("Potion_s"), &QPushButton::clicked, this, [this]() { Heal(1); });
         connect(stackedWidget.widget(8)->findChild<QPushButton*>("Potion_m"), &QPushButton::clicked, this, [this]() { Heal(2); });
         connect(stackedWidget.widget(8)->findChild<QPushButton*>("Potion_l"), &QPushButton::clicked, this, [this]() { Heal(3); });
-        connect(stackedWidget.widget(8)->findChild<QPushButton*>("Zurück"),&QPushButton::clicked, this, &MainWindow::switchToConsum);     
+        connect(stackedWidget.widget(8)->findChild<QPushButton*>("Zurück"),&QPushButton::clicked, this, &MainWindow::switchToConsum);
+        connect(stackedWidget.widget(9)->findChild<QPushButton*>("Zurück"),&QPushButton::clicked, this, &MainWindow::switchToShop); 
+        connect(stackedWidget.widget(9)->findChild<QPushButton*>("Kaufen_trank_s"), &QPushButton::clicked, this, [this]() { buyPotion(1); });
+        connect(stackedWidget.widget(9)->findChild<QPushButton*>("Kaufen_trank_m"), &QPushButton::clicked, this, [this]() { buyPotion(2); });
+        connect(stackedWidget.widget(9)->findChild<QPushButton*>("Kaufen_trank_l"), &QPushButton::clicked, this, [this]() { buyPotion(3); });  
+        connect(stackedWidget.widget(10)->findChild<QPushButton*>("Zurück"),&QPushButton::clicked, this, &MainWindow::switchToShop);
+    
         connect(this, &MainWindow::characterCreated, this, &MainWindow::updateUI);
 
         connect(playerHealthBar, &QProgressBar::valueChanged, this, &MainWindow::updateHealthToolTip);
     connect(enemyHealthBar, &QProgressBar::valueChanged, this, &MainWindow::updateHealthToolTip);
 
     }
-
+//.................................................................
 
 };
 
