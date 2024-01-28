@@ -21,6 +21,7 @@
 
 
 
+
     struct Mobs;
     struct Helden;
 
@@ -67,8 +68,6 @@ struct Helden
             info << "Name: " << Name << "\n"
                  << "Klasse: " << Klasse << "\n"
                  << "Rasse: " << Rasse << "\n"
-                 << "HP: " << hp << "/" << maxhp << "\n"
-                 << "Exp: " << exp << "\n"
                  << "Level: " << lvl << "\n"
                  << "Attack Damage: " << attackdmg << "\n"
                  << "Magic Damage: " << magicdmg;
@@ -149,7 +148,6 @@ struct Helden
         std::ostringstream info;
             info << "Name: " << Name << "\n"
                  << "Rasse: " << Rasse << "\n"
-                 << "HP: " << hp << "/" << maxhp << "\n"
                  << "Level: " << lvl << "\n"
                  << "Attack Damage: " << attackdmg << "\n"
                  << "Magic Damage: " << magicdmg;
@@ -206,11 +204,20 @@ QLabel *rightCharInfoLabel;
 QLabel *leftCharInfoLabel;
 QLabel *leftCharLabel;
 QLabel *coinsDisplayLabel;
+QLabel *coinsDisplayLabel2;
+QLabel *coinsDisplayLabel3;
 QProgressBar *playerHealthBar;
+QProgressBar *playerHealthBar2;
 QProgressBar *enemyHealthBar;
 QPushButton *ButtonPotion_s;
 QPushButton *ButtonPotion_m;
 QPushButton *ButtonPotion_l;
+QPushButton *Verkaufen1;
+QPushButton *Verkaufen2;
+QPushButton *Verkaufen3;
+QProgressBar *expBar;
+
+
 
 int numbpotion_s = 3;
 int numbpotion_m = 2;
@@ -222,6 +229,10 @@ int coins = 0;
       void loadCharData(){
             loadFromFile("../Textdateien/allyKlassen", allyklassen);
             loadFromFile("../Textdateien/allyRassen", allyrassen);
+
+            QPixmap cursorPixmap("../Bilder/Cursor_Default.png");
+            QCursor customCursor(cursorPixmap);
+            setCursor(customCursor);
       }
       void loadEnemyData() {
             loadFromFile("../Textdateien/Enemynames", names);
@@ -325,6 +336,7 @@ int coins = 0;
                 Held.push_back(newHeld);
 
                 updateUI();
+                updateVisuals();
                 // Display character information (you can replace this with your own logic)
                 QMessageBox::information(this, "Character Created", QString::fromStdString("Character " + newHeld.Name + " created!"));
                 switchToMM();
@@ -336,6 +348,24 @@ int coins = 0;
 
     void physicalAttack(){
         Held[0].Attack(Mob[0]);
+        if(Mob[0].hp <= 0){
+            Mob.pop_back();
+            Held[0].getEXP(1000);
+            coins = coins + 100;
+            updateUI();
+            switchToVictoryscreen();
+        }else{
+            Mob[0].Attack(Held[0]);
+            if(Held[0].hp <= 0){
+                Held.erase(Held.begin());
+                Mob.pop_back();
+                switchToDeathscreen();
+            }
+        }
+        updateUI();
+    }
+    void magicalAttack(){
+        Held[0].MagicAttack(Mob[0]);
         if(Mob[0].hp <= 0){
             Mob.pop_back();
             Held[0].getEXP(1000);
@@ -463,7 +493,87 @@ int coins = 0;
         updateUI();
     }
 
+    void sellPotion(int potion){
+        int potioncost_s = 15;
+        int potioncost_m = 25;
+        int potioncost_l = 35;
+        if(potion == 1){
+            if(numbpotion_s > 0){
+                coins = coins + potioncost_s;
+                numbpotion_s = numbpotion_s - 1;
+                QMessageBox::information(this,"Information", QString::fromStdString("Du hast einen Trank(S) für  " + std::to_string(potioncost_s) + " coins verkauft."));
+            }else{
+                QMessageBox::information(this,"Information", "Du hast keine Potions(S)");
+            }
+        }else if(potion == 2){
+            if(numbpotion_m > 0){
+                coins = coins + potioncost_m;
+                numbpotion_m = numbpotion_s - 1;
+                QMessageBox::information(this,"Information", QString::fromStdString("Du hast einen Trank(M) für  " + std::to_string(potioncost_m) + " coins verkauft."));
+            }else{
+                QMessageBox::information(this,"Information", "Du hast keine Potions(S)");
+            }
+        }else if(potion == 3){
+            if(numbpotion_l > 0){
+                coins = coins + potioncost_l;
+                numbpotion_l = numbpotion_s - 1;
+                QMessageBox::information(this,"Information", QString::fromStdString("Du hast einen Trank(L) für  " + std::to_string(potioncost_l) + " coins verkauft."));
+            }else{
+                QMessageBox::information(this,"Information", "Du hast keine Potions(S)");
+            }
+        }
+        updateUI();
+    }
 
+
+    void updateVisuals(){
+        if(Held[0].Klasse == "Barbar"){
+            QPixmap leftoriginalPixmap("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordsman.png");
+
+        }
+        if(Held[0].Klasse == "Barde"){
+            QPixmap leftoriginalPixmap("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordsman.png");
+        }
+        if(Held[0].Klasse == "Druide"){
+            QPixmap leftoriginalPixmap("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordsman.png");
+        }
+        if(Held[0].Klasse == "Hexenmeister"){
+            QPixmap leftoriginalPixmap("../Bilder/Mage.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Mage.png");
+        }
+        if(Held[0].Klasse == "Schwertkämpfer"){
+            QPixmap leftoriginalPixmap("../Bilder/Swordman.gif");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordman.gif");
+        }
+        if(Held[0].Klasse == "Kleriker"){
+            QPixmap leftoriginalPixmap("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordsman.png");
+        }
+        if(Held[0].Klasse == "Paladin"){
+            QPixmap leftoriginalPixmap("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordsman.png");
+        }
+        if(Held[0].Klasse == "Magier"){
+            QPixmap leftoriginalPixmap("../Bilder/Mage.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Mage.png");
+        }
+        if(Held[0].Klasse == "Mönch"){
+            QPixmap leftoriginalPixmap("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordsman.png");
+        }
+        if(Held[0].Klasse == "Waldläufer"){
+            QPixmap leftoriginalPixmap("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordsman.png");
+        }
+        if(Held[0].Klasse == "Schurke"){
+            QPixmap leftoriginalPixmap("../Bilder/Demon.gif");
+            QPixmap leftoriginalPixmapchar("../Bilder/Demon.gif");
+        }
+
+    }
 
     //SwitchScreenFunktions.............................................
 
@@ -536,30 +646,51 @@ int coins = 0;
         enemyHealthBar->setValue(Mob[0].hp);
 }
         coinsDisplayLabel->setText(QString::number(coins));
-        
+        coinsDisplayLabel2->setText(QString::number(coins));
+        coinsDisplayLabel3->setText(QString::number(coins));
+
         //Consummenü Potion Buttons
         if (numbpotion_s > 0) {
         ButtonPotion_s->setText("Use Potion (S) (x" + QString::number(numbpotion_s) + ")");
         ButtonPotion_s->setEnabled(true);
+        Verkaufen1->setText("Verkaufe Potion(S) (x" + QString::number(numbpotion_s) + ")");
+        Verkaufen1->setEnabled(true);
     } else {
         ButtonPotion_s->setText("Use Potion (S) (0)");
         ButtonPotion_s->setEnabled(false);
+        Verkaufen1->setText("Verkaufe Potion (S) (0)");
+        Verkaufen1->setEnabled(false);
     }
         if (numbpotion_m > 0) {
         ButtonPotion_m->setText("Use Potion (M) (x" + QString::number(numbpotion_m) + ")");
         ButtonPotion_m->setEnabled(true);
+        Verkaufen2->setText("Verkaufe Potion(M) (x" + QString::number(numbpotion_m) + ")");
+        Verkaufen2->setEnabled(true);
     } else {
         ButtonPotion_m->setText("Use Potion (M) (0)");
         ButtonPotion_m->setEnabled(false);
+        Verkaufen2->setText("Verkaufe Potion (M) (0)");
+        Verkaufen2->setEnabled(false);
     }
         if (numbpotion_l > 0) {
         ButtonPotion_l->setText("Use Potion (L) (x" + QString::number(numbpotion_l) + ")");
         ButtonPotion_l->setEnabled(true);
+        Verkaufen3->setText("Verkaufe Potion(L) (x" + QString::number(numbpotion_l) + ")");
+        Verkaufen3->setEnabled(true);
     } else {
         ButtonPotion_l->setText("Use Potion (L) (0)");
         ButtonPotion_l->setEnabled(false);
+        Verkaufen3->setText("Verkaufe Potion (L) (0)");
+        Verkaufen3->setEnabled(false);
+    }
+    expBar->setValue(Held[0].exp);
+    if (!Held.empty()) {
+            playerHealthBar2->setRange(0, Held[0].maxhp);
+            playerHealthBar2->setValue(Held[0].hp);
     }
       }
+
+    
 //..............................................................................
 
 //Erstellen der Pages.......................................
@@ -603,7 +734,7 @@ int coins = 0;
             QLabel *leftlabel = new QLabel(QString("Kampfmenü"),Kampfmenü);
             leftCharInfoLabel = new QLabel;
 
-            QPixmap leftoriginalPixmap("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmap("../Bilder/Swordman.gif");
             QPixmap leftscaledPixmap = leftoriginalPixmap.scaled(200, 200, Qt::KeepAspectRatio);
             leftlabel->setPixmap(leftscaledPixmap);
 
@@ -618,7 +749,7 @@ int coins = 0;
             QLabel *rightlabel = new QLabel(QString("Kampfmenü"),Kampfmenü);
             rightCharInfoLabel = new QLabel;
 
-            QPixmap rightoriginalPixmap("../Bilder/Goblin.png");
+            QPixmap rightoriginalPixmap("../Bilder/Goblin.gif");
             QPixmap rightscaledPixmap = rightoriginalPixmap.scaled(200, 200, Qt::KeepAspectRatio);
             rightlabel->setPixmap(rightscaledPixmap);
 
@@ -628,7 +759,7 @@ int coins = 0;
             // Handle the case when Held vector is empty
                 rightCharInfoLabel->setText("No Enemy information available");
             }
-            QPushButton *AttackButton = new QPushButton("Phyysischer Angriff");
+            QPushButton *AttackButton = new QPushButton("Physischer Angriff");
             QPushButton *MagicButton = new QPushButton("Magischer Angriff");
             QPushButton *ZurückButton = new QPushButton("Zurück");
 
@@ -636,7 +767,7 @@ int coins = 0;
             MagicButton->setObjectName("MagicButton");
             ZurückButton->setObjectName("ZurückButton");
 
-
+    QHBoxLayout *KampflayoutHealtlayout = new QHBoxLayout(Kampfmenü);
     playerHealthBar = new QProgressBar(Kampfmenü);
     enemyHealthBar = new QProgressBar(Kampfmenü);
     playerHealthBar->setOrientation(Qt::Horizontal);
@@ -676,9 +807,9 @@ int coins = 0;
                                   "width: 20px;"
                                   "}");
 
-    KampfmenülayoutV->addWidget(playerHealthBar);
-    KampfmenülayoutV->addWidget(enemyHealthBar);
-
+    KampflayoutHealtlayout->addWidget(playerHealthBar);
+    KampflayoutHealtlayout->addWidget(enemyHealthBar);
+    KampfmenülayoutV->addLayout(KampflayoutHealtlayout);
 QHBoxLayout *infoLabelsLayout = new QHBoxLayout;
 infoLabelsLayout->addWidget(leftCharInfoLabel);
 infoLabelsLayout->addStretch();
@@ -712,6 +843,47 @@ KampfmenülayoutV->addLayout(ImageLayout);
             QWidget *CharMenü = new QWidget;
             QVBoxLayout *Charlayout = new QVBoxLayout(CharMenü);
             QLabel *leftlabelchar = new QLabel(QString("charMenü"),CharMenü);
+
+            QHBoxLayout *coinsLayout2 = new QHBoxLayout(CharMenü);
+            QLabel *coinLabel2 = new QLabel(QString("Charmenü"),CharMenü);
+            QPixmap coinpix2("../Bilder/coin.gif");
+            QPixmap coinpix_scaled2 = coinpix2.scaled(20, 20, Qt::KeepAspectRatio);
+            coinLabel2->setPixmap(coinpix_scaled2);
+            coinLabel2->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+            coinsDisplayLabel2 = new QLabel(QString::number(coins), this);
+            coinsDisplayLabel2->setStyleSheet("font-size: 16px;");
+            coinsDisplayLabel2->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+            coinsLayout2->setAlignment(Qt::AlignLeft);
+            coinsLayout2->addWidget(coinLabel2);
+            coinsLayout2->addWidget(coinsDisplayLabel2);
+            Charlayout->addLayout(coinsLayout2);
+            
+
+            playerHealthBar2 = new QProgressBar(CharMenü);
+            playerHealthBar2->setOrientation(Qt::Horizontal);
+            if (!Held.empty()) {
+            playerHealthBar2->setRange(0, Held[0].maxhp);
+            playerHealthBar2->setValue(Held[0].hp);
+    }
+            playerHealthBar2->setStyleSheet("QProgressBar {"
+                                   "border: 2px solid grey;"
+                                   "border-radius: 5px;"
+                                   "background: white;"
+                                   "padding: 1px;"
+                                   "text-align: center;"
+                                   "}"
+                                   "QProgressBar::chunk {"
+                                   "background-color: #05B8CC;"
+                                   "width: 20px;"
+                                   "}");                
+            Charlayout->addWidget(playerHealthBar2);
+            expBar = new QProgressBar(CharMenü);
+            expBar->setFixedSize(100, 15);
+            expBar->setMinimum(0);
+            expBar->setMaximum(2000);
+            expBar->setStyleSheet("QProgressBar { border: 2px solid grey; border-radius: 5px; background-color: #FFFFFF; }"
+                      "QProgressBar::chunk { background-color: #00FF00; width: 20px; }");
+            Charlayout->addWidget(expBar);
             leftCharLabel = new QLabel;
             if (!Held.empty()) {
                 leftCharLabel->setText(QString::fromStdString(Held[0].getInfo()));
@@ -720,7 +892,7 @@ KampfmenülayoutV->addLayout(ImageLayout);
                 leftCharLabel->setText("No character information available");
             }
 
-            QPixmap leftoriginalPixmapchar("../Bilder/Swordsman.png");
+            QPixmap leftoriginalPixmapchar("../Bilder/Swordman.gif");
             QPixmap leftscaledPixmapchar = leftoriginalPixmapchar.scaled(200, 200, Qt::KeepAspectRatio);
             leftlabelchar->setPixmap(leftscaledPixmapchar);
             QPushButton *ZurückButton3 = new QPushButton("Zurück");
@@ -786,7 +958,7 @@ KampfmenülayoutV->addLayout(ImageLayout);
             QVBoxLayout *Kauflayout = new QVBoxLayout(Kaufmenü);
             QHBoxLayout *coinsLayout = new QHBoxLayout(Kaufmenü);
             QLabel *coinLabel = new QLabel(QString("Kaufmenü"),Kaufmenü);
-            QPixmap coinpix("../Bilder/coin.jpg");
+            QPixmap coinpix("../Bilder/coin.gif");
             QPixmap coinpix_scaled = coinpix.scaled(20, 20, Qt::KeepAspectRatio);
             coinLabel->setPixmap(coinpix_scaled);
             coinLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -816,14 +988,32 @@ KampfmenülayoutV->addLayout(ImageLayout);
             //Verkaufmenü
             QWidget *Verkaufmenü = new QWidget;
             QVBoxLayout *Verkauflayout = new QVBoxLayout(Verkaufmenü);
-            QLabel *coinLabel2 = new QLabel("💰", this); 
-            coinLabel2->setStyleSheet("font-size: 20px;");
-            QLabel *coinsDisplayLabel2 = new QLabel(QString::number(coins), this);
-            coinsDisplayLabel2->setStyleSheet("font-size: 16px;");
+
+            QHBoxLayout *coinsLayout3 = new QHBoxLayout(Verkaufmenü);
+            QLabel *coinLabel3 = new QLabel(QString("Verkaufmenü"),Verkaufmenü);
+            QPixmap coinpix3("../Bilder/coin.gif");
+            QPixmap coinpix_scaled3 = coinpix3.scaled(20, 20, Qt::KeepAspectRatio);
+            coinLabel3->setPixmap(coinpix_scaled3);
+            coinLabel3->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+            coinsDisplayLabel3 = new QLabel(QString::number(coins), this);
+            coinsDisplayLabel3->setStyleSheet("font-size: 16px;");
+            coinsDisplayLabel3->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+            coinsLayout3->setAlignment(Qt::AlignLeft);
+            coinsLayout3->addWidget(coinLabel3);
+            coinsLayout3->addWidget(coinsDisplayLabel3);
+            Verkauflayout->addLayout(coinsLayout3);
+
+            Verkaufen1 = new QPushButton("Verkaufe Potion (S)");
+            Verkaufen2 = new QPushButton("Verkaufe Potion (M)");
+            Verkaufen3 = new QPushButton("Verkaufe Potion (L)");
             QPushButton *ZurückButton7 = new QPushButton("Zurück");
+            Verkaufen1->setObjectName("Verkaufen1");
+            Verkaufen2->setObjectName("Verkaufen2");
+            Verkaufen3->setObjectName("Verkaufen3");
             ZurückButton7->setObjectName("Zurück");
-            Verkauflayout->addWidget(coinLabel2);
-            Verkauflayout->addWidget(coinsDisplayLabel2);
+            Verkauflayout->addWidget(Verkaufen1);
+            Verkauflayout->addWidget(Verkaufen2);
+            Verkauflayout->addWidget(Verkaufen3);
             Verkauflayout->addWidget(ZurückButton7);
             stackedWidget.addWidget(Verkaufmenü);
 
@@ -845,6 +1035,7 @@ KampfmenülayoutV->addLayout(ImageLayout);
         connect(stackedWidget.widget(1)->findChild<QPushButton*>("ShopButton"),&QPushButton::clicked, this, &MainWindow::switchToShop);
         connect(stackedWidget.widget(2)->findChild<QPushButton*>("ZurückButton"),&QPushButton::clicked, this, &MainWindow::switchToMM);
         connect(stackedWidget.widget(2)->findChild<QPushButton*>("AttackButton"),&QPushButton::clicked, this, &MainWindow::physicalAttack);
+        connect(stackedWidget.widget(2)->findChild<QPushButton*>("MagicButton"),&QPushButton::clicked, this, &MainWindow::physicalAttack);
         connect(stackedWidget.widget(3)->findChild<QPushButton*>("ZurückButton"),&QPushButton::clicked, this, &MainWindow::switchToMM);
         connect(stackedWidget.widget(3)->findChild<QPushButton*>("Potions"),&QPushButton::clicked, this, &MainWindow::switchToHealScreen);
         connect(stackedWidget.widget(4)->findChild<QPushButton*>("ZurückButton"),&QPushButton::clicked, this, &MainWindow::switchToMM);
@@ -861,6 +1052,9 @@ KampfmenülayoutV->addLayout(ImageLayout);
         connect(stackedWidget.widget(9)->findChild<QPushButton*>("Kaufen_trank_s"), &QPushButton::clicked, this, [this]() { buyPotion(1); });
         connect(stackedWidget.widget(9)->findChild<QPushButton*>("Kaufen_trank_m"), &QPushButton::clicked, this, [this]() { buyPotion(2); });
         connect(stackedWidget.widget(9)->findChild<QPushButton*>("Kaufen_trank_l"), &QPushButton::clicked, this, [this]() { buyPotion(3); });  
+        connect(stackedWidget.widget(10)->findChild<QPushButton*>("Verkaufen1"), &QPushButton::clicked, this, [this]() { sellPotion(1); });
+        connect(stackedWidget.widget(10)->findChild<QPushButton*>("Verkaufen2"), &QPushButton::clicked, this, [this]() { sellPotion(2); });
+        connect(stackedWidget.widget(10)->findChild<QPushButton*>("Verkaufen3"), &QPushButton::clicked, this, [this]() { sellPotion(3); });          
         connect(stackedWidget.widget(10)->findChild<QPushButton*>("Zurück"),&QPushButton::clicked, this, &MainWindow::switchToShop);
     
         connect(this, &MainWindow::characterCreated, this, &MainWindow::updateUI);
