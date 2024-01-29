@@ -192,6 +192,7 @@ public:
             loadEnemyData();
             loadCharData();
             createPages();
+            checkJSON();
             setupConnections();
 
 
@@ -214,6 +215,7 @@ QLabel *coinsDisplayLabel3;
 QProgressBar *playerHealthBar;
 QProgressBar *playerHealthBar2;
 QProgressBar *enemyHealthBar;
+QPushButton *continueButton;
 QPushButton *ButtonPotion_s;
 QPushButton *ButtonPotion_m;
 QPushButton *ButtonPotion_l;
@@ -229,6 +231,14 @@ int numbpotion_m = 2;
 int numbpotion_l = 4;
 
 int coins = 0;
+
+void checkJSON(){
+    if (!std::filesystem::exists("../Save/save.json")) {
+        continueButton->setEnabled(false);
+    }else {
+        continueButton->setEnabled(true);
+    }
+}
 
 void loadJSON(){
 //JSON Save
@@ -335,18 +345,12 @@ void saveData(){
                 db["Held"][i]["MagicDamage"] = Held[i].magicdmg;
                 }                
             }
-    if(!db["coins"].empty()){
+
                 db["coins"] = coins;
-            }
-            if(!db["numbpotion_s"].empty()){
                 db["numbpotion_s"] = numbpotion_s;
-            }
-            if(!db["numbpotion_m"].empty()){
                 db["numbpotion_m"] = numbpotion_m;
-            }
-            if(!db["numbpotion_l"].empty()){
                 db["numbpotion_l"] = numbpotion_l;
-            }
+
 
     std::ofstream file("../Save/save.json");
     file << db.dump();
@@ -816,7 +820,7 @@ void saveData(){
             QWidget *StartMenü = new QWidget;
             QVBoxLayout *Startlayout = new QVBoxLayout(StartMenü);
             QPushButton *StartButton = new QPushButton("Start a new Game"); 
-            QPushButton *continueButton = new QPushButton("Load Savestate");
+            continueButton = new QPushButton("Continue Game");
             continueButton->setObjectName("ContinueButton");
             StartButton->setObjectName("GameStartButton");  // Set the object name
             Startlayout->addWidget(StartButton);
