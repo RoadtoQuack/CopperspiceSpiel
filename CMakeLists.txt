@@ -8,6 +8,18 @@ include(CheckIncludeFiles)
  
 find_package(CopperSpice REQUIRED)
 
+find_package(nlohmann_json QUIET)
+if(NOT nlohmann_json_FOUND)
+include(FetchContent)
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json
+    GIT_TAG        v3.11.2
+)
+FetchContent_MakeAvailable(nlohmann_json)
+endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/root/CopperspiceSpiel/build/_deps/nlohmann_json-src/include")
+
 # file locations for installing
 if (CMAKE_SYSTEM_NAME MATCHES "Darwin")
   include(GNUInstallDirs)
@@ -48,6 +60,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
     netapi32 
     mpr
    -mwindows
+   nlohmann_json::nlohmann_json
   )
 endif()
  

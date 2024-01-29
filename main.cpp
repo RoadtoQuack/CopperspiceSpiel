@@ -18,12 +18,16 @@
 #include <QToolTip>
 #include <QEvent>
 #include <QString>
+#include <iostream>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 
+using json = nlohmann::json;
 
 
-    struct Mobs;
-    struct Helden;
+struct Mobs;
+struct Helden;
 
 struct Helden
     {
@@ -184,6 +188,7 @@ public:
       MainWindow(QWidget *parent = nullptr) : QWidget(parent){
             setFixedSize(500, 500);
             initUI();
+            //loadJSON();
             loadEnemyData();
             loadCharData();
             createPages();
@@ -216,14 +221,78 @@ QPushButton *Verkaufen1;
 QPushButton *Verkaufen2;
 QPushButton *Verkaufen3;
 QProgressBar *expBar;
-
-
+std::string databasefile = "../Save/save.json";
+json db;
 
 int numbpotion_s = 3;
 int numbpotion_m = 2;
 int numbpotion_l = 4;
 
 int coins = 0;
+
+void loadJSON(){
+//JSON Save
+    //db["Held"] = Held;
+    //db["numbpotion_s"] = numbpotion_s;
+    //db["numbpotion_m"] = numbpotion_m;
+    //db["numbpotion_l"] = numbpotion_l;
+    //db["coins"] = coins;
+            if (!std::filesystem::exists("../Save/save.json")) {
+                // Erstellen Sie eine leere Datei, wenn sie nicht existiert
+                std::ofstream("../Save/save.json").close();
+            }
+
+            std::ifstream databasefile{"../Save/save.json"};
+            if (databasefile.peek() != std::ifstream::traits_type::eof()) {
+                db = nlohmann::json::parse(databasefile);
+                for (const auto& jsonHeld : db["Held"]) {
+                    Helden held(
+                        jsonHeld["Name"],
+                        jsonHeld["Klasse"],
+                        jsonHeld["Rasse"],
+                        jsonHeld["Health"],
+                        jsonHeld["MaxHealth"],
+                        jsonHeld["EXP-Points"],
+                        jsonHeld["Level"],
+                        jsonHeld["AttackDamage"],
+                        jsonHeld["MagicDamage"]
+                    );
+                    Held.push_back(held);
+                }
+
+            } else {
+                // Initialisieren Sie die Datenbank mit einem leeren Objekt, falls die Datei leer ist
+                db = nlohmann::json::object();
+            }
+            //Einlesen der coins und Potions
+            if (db.contains("coins")) {
+                coins = db["coins"].get<int>();
+            }
+            if (db.contains("numbpotion_s")) {
+                numbpotion_s = db["numbpotion_s"].get<int>();
+            }
+            if (db.contains("numbpotion_m")) {
+                numbpotion_m = db["numbpotion_m"].get<int>();
+            }
+            if (db.contains("numbpotion_l")) {
+                numbpotion_l = db["numbpotion_l"].get<int>();
+            }
+    for(size_t i = 0; i < Held.size();i++){
+                if (!db["Held"].empty()) {
+                db["Held"][i]["Name"] = Held[i].Name; 
+                db["Held"][i]["Klasse"] = Held[i].Klasse;
+                db["Held"][i]["Rasse"] = Held[i].Rasse;
+                db["Held"][i]["Health"] = Held[i].hp;// Beispiel für die Änderung des Health-Werts
+                db["Held"][i]["MaxHealth"] = Held[i].maxhp;
+                db["Held"][i]["EXP-Points"] = Held[i].exp;
+                db["Held"][i]["Level"] = Held[i].lvl;
+                db["Held"][i]["AttackDamage"] = Held[i].attackdmg;
+                db["Held"][i]["MagicDamage"] = Held[i].magicdmg;
+                }                
+            }
+    updateUI();
+    updateVisuals();       
+}
 
 //LoadDataPart..........................................................
       void loadCharData(){
@@ -250,7 +319,40 @@ int coins = 0;
         }
     }
 //.........................................................................   
-    
+
+//Save Data to JSON
+void saveData(){
+    for(size_t i = 0; i < Held.size();i++){
+                if (!db["Held"].empty()) {
+                db["Held"][i]["Name"] = Held[i].Name; 
+                db["Held"][i]["Klasse"] = Held[i].Klasse;
+                db["Held"][i]["Rasse"] = Held[i].Rasse;
+                db["Held"][i]["Health"] = Held[i].hp;// Beispiel für die Änderung des Health-Werts
+                db["Held"][i]["MaxHealth"] = Held[i].maxhp;
+                db["Held"][i]["EXP-Points"] = Held[i].exp;
+                db["Held"][i]["Level"] = Held[i].lvl;
+                db["Held"][i]["AttackDamage"] = Held[i].attackdmg;
+                db["Held"][i]["MagicDamage"] = Held[i].magicdmg;
+                }                
+            }
+    if(!db["coins"].empty()){
+                db["coins"] = coins;
+            }
+            if(!db["numbpotion_s"].empty()){
+                db["numbpotion_s"] = numbpotion_s;
+            }
+            if(!db["numbpotion_m"].empty()){
+                db["numbpotion_m"] = numbpotion_m;
+            }
+            if(!db["numbpotion_l"].empty()){
+                db["numbpotion_l"] = numbpotion_l;
+            }
+
+    std::ofstream file("../Save/save.json");
+    file << db.dump();
+
+    file.close();
+}    
 
 
 
@@ -337,6 +439,21 @@ int coins = 0;
 
                 updateUI();
                 updateVisuals();
+
+                //Updaten der Jsondatei
+                nlohmann::json HeldenJson = {
+                    {"Name", name.toStdString()},
+                    {"Klasse", klasse.toStdString()},
+                    {"Rasse", rasse.toStdString()},
+                    {"Health", HP},
+                    {"MaxHealth", HP},
+                    {"EXP-Points", 0},
+                    {"Level", 1},
+                    {"AttackDamage", AttackDamage},
+                    {"MagicDamage", MagicDamage}
+                };
+                db["Held"].push_back(HeldenJson);
+
                 // Display character information (you can replace this with your own logic)
                 QMessageBox::information(this, "Character Created", QString::fromStdString("Character " + newHeld.Name + " created!"));
                 switchToMM();
@@ -698,9 +815,12 @@ int coins = 0;
             //StartScreen
             QWidget *StartMenü = new QWidget;
             QVBoxLayout *Startlayout = new QVBoxLayout(StartMenü);
-            QPushButton *StartButton = new QPushButton("Game Start"); 
+            QPushButton *StartButton = new QPushButton("Start a new Game"); 
+            QPushButton *continueButton = new QPushButton("Load Savestate");
+            continueButton->setObjectName("ContinueButton");
             StartButton->setObjectName("GameStartButton");  // Set the object name
             Startlayout->addWidget(StartButton);
+            Startlayout->addWidget(continueButton);
             stackedWidget.addWidget(StartMenü);
 
             //CreateCharacter
@@ -714,8 +834,10 @@ int coins = 0;
             QPushButton *ConsumButton = new QPushButton("Verbrauchsgegenstände");
             QPushButton *CharButton = new QPushButton("Character");
             QPushButton *ShopButton = new QPushButton("Shop");
+            QPushButton *SaveButton = new QPushButton("Save File");
             QPushButton *BeendenButton = new QPushButton("Beenden");
             BeendenButton->setObjectName("BeendenButton");
+            SaveButton->setObjectName("Save");
             KampfButton->setObjectName("KampfButton");
             ConsumButton->setObjectName("ConsumButton");
             CharButton->setObjectName("CharButton");
@@ -724,6 +846,7 @@ int coins = 0;
             MMlayout->addWidget(ConsumButton);
             MMlayout->addWidget(CharButton);
             MMlayout->addWidget(ShopButton);
+            MMlayout->addWidget(SaveButton);
             MMlayout->addWidget(BeendenButton);
             stackedWidget.addWidget(MM);
 
@@ -1027,6 +1150,9 @@ KampfmenülayoutV->addLayout(ImageLayout);
       void setupConnections() {
 
         connect(stackedWidget.widget(0)->findChild<QPushButton*>("GameStartButton"), &QPushButton::clicked, this, &MainWindow::createCharacter);
+        connect(stackedWidget.widget(0)->findChild<QPushButton*>("ContinueButton"), &QPushButton::clicked, this, &MainWindow::loadJSON);
+        connect(stackedWidget.widget(0)->findChild<QPushButton*>("ContinueButton"), &QPushButton::clicked, this, &MainWindow::switchToMM);
+        connect(stackedWidget.widget(1)->findChild<QPushButton*>("Save"), &QPushButton::clicked, this, &MainWindow::saveData);
         connect(stackedWidget.widget(1)->findChild<QPushButton*>("BeendenButton"), &QPushButton::clicked, this, &QWidget::close);
         connect(stackedWidget.widget(1)->findChild<QPushButton*>("KampfButton"),&QPushButton::clicked, this, &MainWindow::createEnemy);
         connect(stackedWidget.widget(1)->findChild<QPushButton*>("KampfButton"),&QPushButton::clicked, this, &MainWindow::switchToKampfMenü);
