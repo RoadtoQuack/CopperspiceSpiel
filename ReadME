@@ -1,15 +1,20 @@
+1.
 sudo apt install build-essential libgl1-mesa-dev cmake
-
+2.
 curl -o cslib.tar.bz2 https://download.copperspice.com/copperspice/binary/cs-1.8/copperspice-1.8.2-ubuntu20.04-x64.tar.bz2
+3.
 mkdir cslibs && tar -xjvf cslib.tar.bz2 -C cslibs
+4.
 cd cslibs && export CSLIB=$(pwd)
-
+5.
 git clone git@github.com:RoadtoQuack/CopperspiceSpiel.git
-
+6.
 cd CopperspiceSpiel && mkdir build && cd build
-
+7.
 cmake -DCMAKE_PREFIX_PATH=$CSLIB ..
+8.
 cmake --build .
+9.
 cmake --install . --prefix=deploy
-
+10.
 ./deploy/Game
